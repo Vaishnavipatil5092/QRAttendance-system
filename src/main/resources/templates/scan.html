@@ -1,181 +1,276 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scan Attendance</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6f8;
-            color: #222;
-            padding: 24px 16px;
-        }
-
-        .card {
-            width: 100%;
-            max-width: 480px;
-            background: #fff;
-            padding: 32px;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
-
-        h1 {
-            margin: 0 0 8px;
-            font-size: 24px;
-        }
-
-        .hint {
-            margin: 0 0 20px;
-            color: #555;
-            font-size: 14px;
-        }
-
-        #reader {
-            width: 100%;
-            margin-bottom: 20px;
-            overflow: hidden;
-            border-radius: 8px;
-        }
-
-        #result {
-            min-height: 72px;
-            padding: 16px;
-            border-radius: 8px;
-            font-size: 22px;
-            font-weight: bold;
-            line-height: 1.4;
-            white-space: pre-line;
-        }
-
-        #result.idle {
-            background: #f8fafc;
-            color: #64748b;
-            font-size: 16px;
-            font-weight: normal;
-        }
-
-        #result.success {
-            background: #ecfdf5;
-            color: #065f46;
-        }
-
-        #result.paused {
-            background: #fff7ed;
-            color: #9a3412;
-            font-size: 18px;
-        }
-
-        #result.error {
-            background: #fef2f2;
-            color: #991b1b;
-            font-size: 18px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Scan Attendance • QR Attendance</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+.scan-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.scan-tools select,.scan-tools input{padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#fff}
+#reader{min-height:330px}
+#reader video{border-radius:14px}
+.scan-tip{margin-top:12px;padding:12px 14px;border-radius:12px;background:#eef2ff;color:#3730a3;font-size:12px;line-height:1.5}
+</style>
 </head>
 <body>
-    <div class="card">
-        <h1>Scan Attendance</h1>
-        <p class="hint">Point the camera at an employee QR code</p>
-        <div id="reader"></div>
-        <div id="result" class="idle">Waiting for scan...</div>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">QR</div><span>Attendance</span></div>
+  <div class="nav-title">Workspace</div>
+  <nav class="nav">
+    <a href="/"><span class="nav-icon">⌂</span><span>Dashboard</span></a>
+    <a href="/employees"><span class="nav-icon">👥</span><span>Employees</span></a>
+    <a href="/add-employee"><span class="nav-icon">＋</span><span>Add Employee</span></a>
+    <a class="active" href="/scan"><span class="nav-icon">▣</span><span>Scan QR</span></a>
+    <a href="/attendance-report"><span class="nav-icon">▤</span><span>Attendance</span></a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="eyebrow">Attendance</div>
+      <h1>Scan QR code</h1>
+      <p class="subtitle">Point the camera at an employee's QR code to record attendance.</p>
+    </div>
+    <a class="btn btn-secondary" href="/attendance-report">View report</a>
+  </div>
+
+  <div class="scan-layout">
+    <div class="card scanner-card">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Camera scanner</div>
+          <div class="subtitle">Keep the complete QR code inside the frame.</div>
+        </div>
+        <span id="cameraStatus" class="badge badge-amber">● Starting camera…</span>
+      </div>
+
+      <div class="scan-tools">
+        <select id="cameraSelect" aria-label="Camera"></select>
+        <button id="startBtn" class="btn btn-primary" type="button">Start camera</button>
+        <button id="stopBtn" class="btn btn-secondary" type="button">Stop</button>
+        <label class="btn btn-secondary" for="qrFile">Scan image</label>
+        <input id="qrFile" type="file" accept="image/*" hidden>
+        <button id="manualBtn" class="btn btn-secondary" type="button">Enter QR value</button>
+      </div>
+
+      <div id="reader"></div>
+      <div class="scan-tip">
+        <b>Tip:</b> If the QR is displayed on this same laptop screen, use a phone/printed QR or display the QR on another device. A webcam cannot reliably scan a QR that is on the same camera's screen.
+      </div>
     </div>
 
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script th:inline="none">
-        const resultBox = document.getElementById("result");
-        const scanner = new Html5Qrcode("reader");
-        let isBusy = false;
+    <div class="card scan-side">
+      <div class="panel-title">How it works</div>
+      <div class="scan-state" style="margin-top:14px">
+        1. Allow camera access.<br><br>
+        2. Select the correct camera if more than one is available.<br><br>
+        3. Hold the employee QR 15–30 cm from the camera with good lighting.<br><br>
+        4. The system records check-in or check-out automatically.
+      </div>
+      <div id="result" class="idle">Waiting for scan…</div>
+      <div id="lastScan" style="display:none" class="scan-success-card"></div>
+    </div>
+  </div>
+</main>
+</div>
 
-        function showMessage(text, className) {
-            resultBox.className = className;
-            resultBox.textContent = text;
-        }
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+const resultBox = document.getElementById('result');
+const cameraSelect = document.getElementById('cameraSelect');
+const cameraStatus = document.getElementById('cameraStatus');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const fileInput = document.getElementById('qrFile');
+const manualBtn = document.getElementById('manualBtn');
+const lastScan = document.getElementById('lastScan');
 
-        function pauseScanner() {
-            try {
-                scanner.pause(true);
-            } catch (error) {
-                // Older library versions may not support pause().
-            }
-        }
+let scanner = null;
+let running = false;
+let processing = false;
 
-        function resumeScanner() {
-            try {
-                scanner.resume();
-            } catch (error) {
-                // Older library versions may not support resume().
-            }
-        }
+function show(text, cls='idle') {
+  resultBox.className = cls;
+  resultBox.textContent = text;
+}
 
-        async function onScanSuccess(decodedText) {
-            if (isBusy) {
-                return;
-            }
+function setStatus(text, cls='badge-amber') {
+  cameraStatus.className = 'badge ' + cls;
+  cameraStatus.textContent = text;
+}
 
-            isBusy = true;
-            pauseScanner();
+async function loadCameras() {
+  try {
+    // Asking for permission first makes camera labels available in most browsers.
+    try {
+      const temp = await navigator.mediaDevices.getUserMedia({video:true});
+      temp.getTracks().forEach(t => t.stop());
+    } catch (_) {}
 
-            try {
-                const response = await fetch("http://localhost:8080/api/attendance/scan", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ qrCode: decodedText })
-                });
+    const cameras = await Html5Qrcode.getCameras();
+    cameraSelect.innerHTML = '';
 
-                if (response.status === 404) {
-                    throw new Error("No employee found for this QR code.");
-                }
+    if (!cameras.length) {
+      cameraSelect.innerHTML = '<option value="">No camera found</option>';
+      setStatus('● No camera found', 'badge-red');
+      return;
+    }
 
-                if (!response.ok) {
-                    throw new Error("Request failed with status " + response.status);
-                }
+    cameras.forEach((cam, i) => {
+      const option = document.createElement('option');
+      option.value = cam.id;
+      option.textContent = cam.label || `Camera ${i + 1}`;
+      cameraSelect.appendChild(option);
+    });
 
-                const data = await response.json();
-                const action = data.type === "CHECK_IN" ? "Checked IN" : "Checked OUT";
-                showMessage(data.employeeName + "\n" + action, "success");
-            } catch (error) {
-                showMessage(error.message, "error");
-            }
+    const preferred = cameras.find(c => /back|rear|environment/i.test(c.label));
+    cameraSelect.value = (preferred || cameras[0]).id;
+    await startCamera();
+  } catch (err) {
+    setStatus('● Camera unavailable', 'badge-red');
+    show('Camera permission was denied or the browser could not access a camera. ' + err, 'error');
+  }
+}
 
-            await new Promise(function (resolve) {
-                setTimeout(resolve, 3000);
-            });
+async function startCamera() {
+  if (running) return;
+  const cameraId = cameraSelect.value;
+  if (!cameraId) return;
 
-            showMessage("Scanning paused", "paused");
+  scanner = scanner || new Html5Qrcode('reader', {
+    formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+    verbose: false
+  });
 
-            await new Promise(function (resolve) {
-                setTimeout(resolve, 400);
-            });
+  try {
+    setStatus('● Starting…', 'badge-amber');
+    show('Point the camera at a QR code…', 'idle');
 
-            showMessage("Waiting for scan...", "idle");
-            resumeScanner();
-            isBusy = false;
-        }
+    await scanner.start(
+      cameraId,
+      {
+        fps: 15,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          const size = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.72);
+          return { width: Math.max(220, Math.min(size, 360)), height: Math.max(220, Math.min(size, 360)) };
+        },
+        aspectRatio: 1.0,
+        disableFlip: false
+      },
+      onScanSuccess,
+      function() {}
+    );
 
-        scanner.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
-            onScanSuccess,
-            function () {
-                // Ignore frame-by-frame scan misses.
-            }
-        ).catch(function (error) {
-            showMessage("Could not start camera. " + error, "error");
-        });
-    </script>
+    running = true;
+    setStatus('● Camera active', 'badge-green');
+  } catch (err) {
+    running = false;
+    setStatus('● Could not start', 'badge-red');
+    show('Could not start this camera. Try another camera from the dropdown. ' + err, 'error');
+  }
+}
+
+async function stopCamera() {
+  if (!scanner || !running) return;
+  try {
+    await scanner.stop();
+  } catch (_) {}
+  running = false;
+  setStatus('● Camera stopped', 'badge-amber');
+}
+
+async function onScanSuccess(decodedText) {
+  if (processing) return;
+  processing = true;
+  await stopCamera();
+
+  show('QR detected! Recording attendance…', 'paused');
+
+  try {
+    const response = await fetch('/api/attendance/scan', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({qrCode: decodedText})
+    });
+
+    if (response.status === 404) {
+      throw new Error('This QR code is not linked to a registered employee.');
+    }
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(body || ('Server returned HTTP ' + response.status));
+    }
+
+    const data = await response.json();
+    const action = data.type === 'CHECK_IN' ? '✓ Checked IN' : '↗ Checked OUT';
+    show(`${data.employeeName}\n${action}`, 'success');
+  } catch (err) {
+    show(err.message || 'Could not record attendance.', 'error');
+  }
+
+  setTimeout(async () => {
+    show('Ready for the next scan…', 'idle');
+    processing = false;
+    await startCamera();
+  }, 2200);
+}
+
+
+manualBtn.addEventListener('click', async () => {
+  const value = prompt('Paste the employee QR value (UUID):');
+  if (!value || processing) return;
+  processing = true;
+  await stopCamera();
+  show('Recording manual QR value…', 'paused');
+  try {
+    const response = await fetch('/api/attendance/scan', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({qrCode:value.trim()})
+    });
+    if(!response.ok) throw new Error((await response.text()) || ('Server returned HTTP '+response.status));
+    const data=await response.json();
+    const action=data.type==='CHECK_IN'?'✓ Checked IN':'↗ Checked OUT';
+    show(`${data.employeeName}\n${action}`,'success');
+  } catch(e) { show(e.message || 'Could not record attendance.','error'); }
+  setTimeout(async()=>{processing=false;show('Ready for the next scan…','idle');await startCamera();},2200);
+});
+
+fileInput.addEventListener('change', async () => {
+  const file = fileInput.files && fileInput.files[0];
+  if (!file || processing) return;
+
+  processing = true;
+  await stopCamera();
+  show('Reading QR image…', 'paused');
+
+  try {
+    scanner = scanner || new Html5Qrcode('reader', {
+      formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+      verbose: false
+    });
+    const decodedText = await scanner.scanFile(file, true);
+    await onScanSuccess(decodedText);
+  } catch (err) {
+    show('No readable QR code was found in that image. Try a clear, uncropped QR image.', 'error');
+    processing = false;
+    setTimeout(startCamera, 1200);
+  } finally {
+    fileInput.value = '';
+  }
+});
+
+startBtn.addEventListener('click', startCamera);
+stopBtn.addEventListener('click', stopCamera);
+cameraSelect.addEventListener('change', async () => {
+  await stopCamera();
+  await startCamera();
+});
+
+loadCameras();
+</script>
 </body>
 </html>

@@ -1,205 +1,101 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Attendance System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Poppins', system-ui, sans-serif;
-            background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #0f172a 100%);
-            min-height: 100vh;
-            color: #fff;
-            overflow-x: hidden;
-        }
-
-        .navbar {
-            display: flex;
-            align-items: center;
-            padding: 24px 40px;
-            animation: fadeIn 0.8s ease;
-        }
-
-        .navbar .logo {
-            font-weight: 700;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #e0e7ff;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 60px 20px 50px;
-            animation: fadeIn 1s ease;
-        }
-
-        .hero .badge {
-            display: inline-block;
-            padding: 6px 16px;
-            margin-bottom: 20px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            font-size: 12px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: #c4b5fd;
-        }
-
-        .hero h1 {
-            font-size: clamp(36px, 6vw, 64px);
-            font-weight: 800;
-            background: linear-gradient(90deg, #a5b4fc, #f0abfc, #67e8f9, #a5b4fc);
-            background-size: 300% auto;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: shine 5s linear infinite;
-            margin-bottom: 16px;
-        }
-
-        .hero p {
-            font-size: clamp(15px, 2vw, 19px);
-            color: #cbd5e1;
-            font-weight: 400;
-            max-width: 520px;
-            margin: 0 auto;
-        }
-
-        .cards {
-            max-width: 1000px;
-            margin: 40px auto 80px;
-            padding: 0 24px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-            animation: fadeIn 1.2s ease;
-        }
-
-        @media (max-width: 640px) {
-            .cards {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 18px;
-            padding: 32px 28px;
-            text-decoration: none;
-            color: #fff;
-            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-            display: block;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent 60%);
-            opacity: 0;
-            transition: opacity 0.25s ease;
-        }
-
-        .card:hover::before {
-            opacity: 1;
-        }
-
-        .card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.25);
-            border-color: rgba(196, 181, 253, 0.5);
-        }
-
-        .icon-badge {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            margin-bottom: 18px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-        }
-
-        .badge-1 { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
-        .badge-2 { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
-        .badge-3 { background: linear-gradient(135deg, #ec4899, #f43f5e); }
-        .badge-4 { background: linear-gradient(135deg, #f59e0b, #ef4444); }
-
-        .card h2 {
-            font-size: 19px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .card p {
-            font-size: 14px;
-            color: #cbd5e1;
-            line-height: 1.5;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes shine {
-            to { background-position: 300% center; }
-        }
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QR Attendance • Command Center</title><link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo">📡 QR Attendance</div>
-    </div>
+<div class="app">
+<aside class="sidebar">
+<div class="brand"><div class="brand-mark">QR</div><span>Attendance</span></div>
+<div class="nav-title">Workspace</div><nav class="nav">
+<a class="active" href="/"><span class="nav-icon">⌂</span><span>Dashboard</span></a>
+<a href="/employees"><span class="nav-icon">👥</span><span>Employees</span></a>
+<a href="/add-employee"><span class="nav-icon">＋</span><span>Add Employee</span></a>
+<a href="/scan"><span class="nav-icon">▣</span><span>Scan QR</span></a>
+<a href="/attendance-report"><span class="nav-icon">▤</span><span>Reports</span></a>
+</nav>
+<div class="sidebar-footer">QR Attendance System<br>Smart workforce check-ins</div>
+</aside>
 
-    <div class="hero">
-        <div class="badge">Smart workplace tracking</div>
-        <h1>QR Attendance System</h1>
-        <p>Add employees, generate QR codes, scan check-ins, and review attendance — all in one place.</p>
-    </div>
+<main class="main">
+<div class="topbar">
+<div><div class="eyebrow">Command center</div><h1>Attendance overview</h1><p class="subtitle" id="todayLabel">Live attendance insights for today.</p></div>
+<div class="actions"><a class="btn btn-secondary" href="/employees">Directory</a><a class="btn btn-primary" href="/scan">▣ Start scanning</a></div>
+</div>
 
-    <div class="cards">
-        <a href="/add-employee" class="card">
-            <div class="icon-badge badge-1">👤</div>
-            <h2>Add Employee</h2>
-            <p>Register a new employee and generate their unique QR code instantly.</p>
-        </a>
+<section class="hero">
+<div class="eyebrow">QR-powered attendance</div>
+<h1>Know who's in, who's out, and what's happening — at a glance.</h1>
+<p>A competition-ready attendance dashboard with instant QR check-ins, employee identity records, live activity and exportable reports.</p>
+<div class="hero-actions"><a class="btn btn-primary" href="/scan">Scan attendance</a><a class="btn btn-secondary" href="/add-employee">＋ Register employee</a></div>
+</section>
 
-        <a href="/employees" class="card">
-            <div class="icon-badge badge-2">📋</div>
-            <h2>View Employees</h2>
-            <p>Browse all registered employees along with their scannable QR codes.</p>
-        </a>
+<section class="stat-grid">
+<div class="card stat kpi-accent"><div><div class="stat-label">TOTAL EMPLOYEES</div><div class="stat-value" id="totalEmployees">—</div></div><div class="stat-icon">👥</div></div>
+<div class="card stat kpi-accent kpi-green"><div><div class="stat-label">PRESENT TODAY</div><div class="stat-value" id="presentToday">—</div></div><div class="stat-icon">✓</div></div>
+<div class="card stat kpi-accent kpi-red"><div><div class="stat-label">ABSENT TODAY</div><div class="stat-value" id="absentToday">—</div></div><div class="stat-icon">!</div></div>
+<div class="card stat kpi-accent kpi-amber"><div><div class="stat-label">ATTENDANCE RATE</div><div class="stat-value" id="attendanceRate">—</div></div><div class="stat-icon">%</div></div>
+</section>
 
-        <a href="/scan" class="card">
-            <div class="icon-badge badge-3">📷</div>
-            <h2>Scan QR</h2>
-            <p>Use your camera to scan a QR code and mark check-in or check-out.</p>
-        </a>
+<div class="dashboard-grid">
+<section class="card panel">
+<div class="panel-head"><div><div class="panel-title">Today's attendance trend</div><div class="subtitle">Check-ins and check-outs recorded today</div></div><span class="badge badge-green">● Live</span></div>
+<div class="chart-wrap" id="chart"></div>
+</section>
 
-        <a href="/attendance-report" class="card">
-            <div class="icon-badge badge-4">📊</div>
-            <h2>Attendance Report</h2>
-            <p>View a complete log of every check-in and check-out with timestamps.</p>
-        </a>
-    </div>
-</body>
-</html>
+<section class="card panel">
+<div class="panel-head"><div><div class="panel-title">Attendance health</div><div class="subtitle">Present vs total employees</div></div></div>
+<div style="font-size:34px;font-weight:800;margin:10px 0" id="rateBig">—</div>
+<div class="progress"><div id="rateBar" style="width:0%"></div></div>
+<div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--muted)"><span id="presentText">Present: —</span><span id="absentText">Absent: —</span></div>
+<div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="padding:14px;border-radius:13px;background:var(--green-soft)"><div class="stat-label">CHECK-INS</div><b id="ins">—</b></div>
+<div style="padding:14px;border-radius:13px;background:var(--amber-soft)"><div class="stat-label">CHECK-OUTS</div><b id="outs">—</b></div>
+</div>
+</section>
+</div>
+
+<section class="card panel" style="margin-top:18px">
+<div class="panel-head"><div><div class="panel-title">Recent activity</div><div class="subtitle">Latest attendance events</div></div><a class="btn btn-secondary" href="/attendance-report">Full report →</a></div>
+<div class="activity-list" id="activity"></div>
+</section>
+
+<div class="footer">QR Attendance • Prototype dashboard</div>
+</main></div>
+
+<script>
+let timer;
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function niceTime(v){const d=new Date(v);return isNaN(d)?v:d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+async function load(){
+ try{
+  const [s,r]=await Promise.all([fetch('/api/attendance/stats'),fetch('/api/attendance/report')]);
+  if(!s.ok||!r.ok) throw new Error('Unable to load dashboard data');
+  const stats=await s.json(), records=await r.json();
+  document.getElementById('totalEmployees').textContent=stats.totalEmployees;
+  document.getElementById('presentToday').textContent=stats.presentToday;
+  document.getElementById('absentToday').textContent=stats.absentToday;
+  document.getElementById('attendanceRate').textContent=stats.attendanceRate+'%';
+  document.getElementById('rateBig').textContent=stats.attendanceRate+'%';
+  document.getElementById('rateBar').style.width=Math.min(100,stats.attendanceRate)+'%';
+  document.getElementById('presentText').textContent='Present: '+stats.presentToday;
+  document.getElementById('absentText').textContent='Absent: '+stats.absentToday;
+  document.getElementById('ins').textContent=stats.checkInsToday;
+  document.getElementById('outs').textContent=stats.checkOutsToday;
+  document.getElementById('todayLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const recent=records.slice(0,7), activity=document.getElementById('activity');
+  activity.innerHTML=recent.length?recent.map(r=>`<div class="activity"><div class="activity-dot">${r.type==='CHECK_IN'?'✓':'↗'}</div><div class="activity-main"><div class="activity-name">${esc(r.employeeName)}</div><div class="activity-meta">${r.type==='CHECK_IN'?'Checked in':'Checked out'} • ${niceTime(r.timestamp)}</div></div><span class="badge ${r.type==='CHECK_IN'?'badge-green':'badge-amber'}">${r.type==='CHECK_IN'?'IN':'OUT'}</span></div>`).join(''):`<div class="empty"><div class="empty-icon">◷</div><b>No attendance activity yet</b><div>Scan an employee QR to see live activity here.</div></div>`;
+  renderBars(records);
+ }catch(e){document.getElementById('activity').innerHTML='<div class="empty"><b>Dashboard data unavailable</b><div>'+esc(e.message)+'</div></div>'}
+}
+function renderBars(records){
+ const el=document.getElementById('chart'), today=new Date(), labels=[];
+ for(let i=6;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);labels.push(d)}
+ const counts=labels.map(d=>records.filter(r=>{const x=new Date(r.timestamp);return x.toDateString()===d.toDateString()&&r.type==='CHECK_IN'}).length);
+ const max=Math.max(1,...counts);
+ el.innerHTML=counts.map((n,i)=>`<div class="chart-bar" style="height:${Math.max(8,n/max*170)}px" title="${n} check-in(s)"><span>${labels[i].toLocaleDateString(undefined,{weekday:'short'}).slice(0,3)}</span></div>`).join('');
+}
+load(); timer=setInterval(load,15000);
+</script>
+</body></html>

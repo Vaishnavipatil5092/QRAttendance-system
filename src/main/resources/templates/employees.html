@@ -1,134 +1,35 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employees</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6f8;
-            color: #222;
-            padding: 32px 16px;
-        }
-
-        .page {
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            margin: 0 0 24px;
-            font-size: 24px;
-            text-align: center;
-        }
-
-        #status {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #555;
-        }
-
-        #status.error {
-            color: #991b1b;
-        }
-
-        #employeeList {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: #fff;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
-
-        .card h2 {
-            margin: 0 0 8px;
-            font-size: 18px;
-        }
-
-        .card p {
-            margin: 0 0 16px;
-            color: #555;
-            font-size: 14px;
-            word-break: break-all;
-        }
-
-        .card img {
-            width: 180px;
-            height: 180px;
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-        }
-    </style>
-</head>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Employees • QR Attendance</title><link rel="stylesheet" href="/style.css"></head>
 <body>
-    <div class="page">
-        <h1>Employees</h1>
-        <div id="status">Loading employees...</div>
-        <div id="employeeList"></div>
-    </div>
-
-    <script th:inline="none">
-        const status = document.getElementById("status");
-        const employeeList = document.getElementById("employeeList");
-
-        async function loadEmployees() {
-            try {
-                const response = await fetch("http://localhost:8080/api/employees");
-
-                if (!response.ok) {
-                    throw new Error("Request failed with status " + response.status);
-                }
-
-                const employees = await response.json();
-
-                if (!employees.length) {
-                    status.textContent = "No employees found.";
-                    return;
-                }
-
-                status.textContent = "";
-                employeeList.innerHTML = "";
-
-                employees.forEach(function (employee) {
-                    const card = document.createElement("div");
-                    card.className = "card";
-
-                    const name = document.createElement("h2");
-                    name.textContent = employee.name;
-
-                    const email = document.createElement("p");
-                    email.textContent = employee.email;
-
-                    const qrImage = document.createElement("img");
-                    qrImage.src = "http://localhost:8080/api/employees/" + employee.id + "/qrcode";
-                    qrImage.alt = "QR code for " + employee.name;
-
-                    card.appendChild(name);
-                    card.appendChild(email);
-                    card.appendChild(qrImage);
-                    employeeList.appendChild(card);
-                });
-            } catch (error) {
-                status.className = "error";
-                status.textContent = "Could not load employees. " + error.message;
-            }
-        }
-
-        loadEmployees();
-    </script>
-</body>
-</html>
+<div class="app"><aside class="sidebar"><div class="brand"><div class="brand-mark">QR</div><span>Attendance</span></div><div class="nav-title">Workspace</div><nav class="nav">
+<a href="/"><span class="nav-icon">⌂</span><span>Dashboard</span></a><a class="active" href="/employees"><span class="nav-icon">👥</span><span>Employees</span></a><a href="/add-employee"><span class="nav-icon">＋</span><span>Add Employee</span></a><a href="/scan"><span class="nav-icon">▣</span><span>Scan QR</span></a><a href="/attendance-report"><span class="nav-icon">▤</span><span>Reports</span></a>
+</nav></aside>
+<main class="main">
+<div class="topbar"><div><div class="eyebrow">People</div><h1>Employee directory</h1><p class="subtitle">Manage identities and their secure attendance QR codes.</p></div><a class="btn btn-primary" href="/add-employee">＋ Add employee</a></div>
+<div class="card panel"><div class="panel-head"><div><div class="panel-title"><span id="count">0</span> employees</div><div id="status" class="subtitle">Loading...</div></div><div class="toolbar"><input id="search" class="search" placeholder="Search name or email"><button class="btn btn-secondary" id="downloadAll">Export directory</button></div></div>
+<div class="table-wrap"><table><thead><tr><th>Employee</th><th>Email</th><th>QR status</th><th>Actions</th></tr></thead><tbody id="employeeBody"></tbody></table></div></div>
+</main></div>
+<script>
+let employees=[];
+const body=document.getElementById('employeeBody'),search=document.getElementById('search'),count=document.getElementById('count'),status=document.getElementById('status');
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function initials(n){return (n||'?').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
+function render(){
+ const q=search.value.trim().toLowerCase(), data=employees.filter(e=>(e.name||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
+ count.textContent=data.length;
+ if(!data.length){body.innerHTML='<tr><td colspan="4"><div class="empty"><div class="empty-icon">👥</div><b>No employees found</b><div>Try another search or register a new employee.</div></div></td></tr>';return}
+ body.innerHTML=data.map(e=>`<tr>
+ <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${initials(e.name)}</div><div><b>${esc(e.name)}</b><div class="employee-email">ID #${e.id}</div></div></div></td>
+ <td>${esc(e.email)}</td><td><span class="badge badge-green">● QR ACTIVE</span></td>
+ <td><div class="table-actions"><a class="icon-btn" target="_blank" href="/api/employees/${e.id}/qrcode">View QR</a><a class="icon-btn" href="/scan">Scan</a></div></td></tr>`).join('');
+}
+async function load(){try{const r=await fetch('/api/employees');if(!r.ok)throw new Error('HTTP '+r.status);employees=await r.json();status.textContent='QR identities ready';render()}catch(e){status.textContent='Could not load employees: '+e.message}}
+search.addEventListener('input',render);
+document.getElementById('downloadAll').addEventListener('click',()=>{
+ const rows=[['ID','Name','Email'],...employees.map(e=>[e.id,e.name,e.email])];
+ const csv=rows.map(r=>r.map(x=>`"${String(x??'').replaceAll('"','""')}"`).join(',')).join('\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='employee-directory.csv';a.click();URL.revokeObjectURL(a.href);
+});
+load();
+</script></body></html>

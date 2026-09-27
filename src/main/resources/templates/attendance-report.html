@@ -1,186 +1,39 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Report</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6f8;
-            color: #222;
-            padding: 32px 16px;
-        }
-
-        .card {
-            width: 100%;
-            max-width: 900px;
-            background: #fff;
-            padding: 32px;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-        }
-
-        h1 {
-            margin: 0 0 8px;
-            font-size: 24px;
-            text-align: center;
-        }
-
-        #status {
-            text-align: center;
-            margin: 0 0 20px;
-            color: #555;
-        }
-
-        #status.error {
-            color: #991b1b;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px 10px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 14px;
-        }
-
-        th {
-            background: #f8fafc;
-            font-weight: bold;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .type-in {
-            color: #065f46;
-            font-weight: bold;
-        }
-
-        .type-out {
-            color: #9a3412;
-            font-weight: bold;
-        }
-    </style>
-</head>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Attendance Intelligence • QR Attendance</title><link rel="stylesheet" href="/style.css"></head>
 <body>
-    <div class="card">
-        <h1>Attendance Report</h1>
-        <p id="status">Loading attendance records...</p>
-        <table id="reportTable" hidden>
-            <thead>
-                <tr>
-                    <th>Employee Name</th>
-                    <th>Type</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody id="reportBody"></tbody>
-        </table>
-    </div>
-
-    <script th:inline="none">
-        const status = document.getElementById("status");
-        const reportTable = document.getElementById("reportTable");
-        const reportBody = document.getElementById("reportBody");
-
-        function formatTimestamp(value) {
-            if (!value) {
-                return "Unknown";
-            }
-
-            const date = new Date(value);
-            if (isNaN(date.getTime())) {
-                return String(value);
-            }
-
-            return date.toLocaleString(undefined, {
-                weekday: "short",
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit"
-            });
-        }
-
-        async function loadReport() {
-            try {
-                const [attendanceResponse, employeesResponse] = await Promise.all([
-                    fetch("http://localhost:8080/api/attendance"),
-                    fetch("http://localhost:8080/api/employees")
-                ]);
-
-                if (!attendanceResponse.ok) {
-                    throw new Error("Attendance request failed with status " + attendanceResponse.status);
-                }
-
-                if (!employeesResponse.ok) {
-                    throw new Error("Employees request failed with status " + employeesResponse.status);
-                }
-
-                const records = await attendanceResponse.json();
-                const employees = await employeesResponse.json();
-
-                const namesById = {};
-                employees.forEach(function (employee) {
-                    namesById[employee.id] = employee.name;
-                });
-
-                records.sort(function (a, b) {
-                    return new Date(b.timestamp) - new Date(a.timestamp);
-                });
-
-                if (!records.length) {
-                    status.textContent = "No attendance records found.";
-                    return;
-                }
-
-                reportBody.innerHTML = "";
-
-                records.forEach(function (record) {
-                    const row = document.createElement("tr");
-
-                    const nameCell = document.createElement("td");
-                    nameCell.textContent = namesById[record.employeeId] || ("Employee #" + record.employeeId);
-
-                    const typeCell = document.createElement("td");
-                    typeCell.textContent = record.type;
-                    typeCell.className = record.type === "CHECK_IN" ? "type-in" : "type-out";
-
-                    const timeCell = document.createElement("td");
-                    timeCell.textContent = formatTimestamp(record.timestamp);
-
-                    row.appendChild(nameCell);
-                    row.appendChild(typeCell);
-                    row.appendChild(timeCell);
-                    reportBody.appendChild(row);
-                });
-
-                status.textContent = "";
-                reportTable.hidden = false;
-            } catch (error) {
-                status.className = "error";
-                status.textContent = "Could not load attendance report. " + error.message;
-            }
-        }
-
-        loadReport();
-    </script>
-</body>
-</html>
+<div class="app"><aside class="sidebar"><div class="brand"><div class="brand-mark">QR</div><span>Attendance</span></div><div class="nav-title">Workspace</div><nav class="nav">
+<a href="/"><span class="nav-icon">⌂</span><span>Dashboard</span></a><a href="/employees"><span class="nav-icon">👥</span><span>Employees</span></a><a href="/add-employee"><span class="nav-icon">＋</span><span>Add Employee</span></a><a href="/scan"><span class="nav-icon">▣</span><span>Scan QR</span></a><a class="active" href="/attendance-report"><span class="nav-icon">▤</span><span>Reports</span></a>
+</nav></aside>
+<main class="main">
+<div class="topbar"><div><div class="eyebrow">Attendance intelligence</div><h1>Attendance report</h1><p class="subtitle">Search, filter and export every attendance event.</p></div><div class="actions"><button id="export" class="btn btn-secondary">Export CSV</button><a class="btn btn-primary" href="/scan">▣ Scan QR</a></div></div>
+<div class="stat-grid">
+<div class="card stat"><div><div class="stat-label">TOTAL RECORDS</div><div class="stat-value" id="total">—</div></div><div class="stat-icon">▤</div></div>
+<div class="card stat kpi-green"><div><div class="stat-label">CHECK-INS</div><div class="stat-value" id="ins">—</div></div><div class="stat-icon">✓</div></div>
+<div class="card stat kpi-amber"><div><div class="stat-label">CHECK-OUTS</div><div class="stat-value" id="outs">—</div></div><div class="stat-icon">↗</div></div>
+<div class="card stat"><div><div class="stat-label">VISIBLE RESULTS</div><div class="stat-value" id="visible">—</div></div><div class="stat-icon">⌕</div></div>
+</div>
+<div class="card panel"><div class="panel-head"><div><div class="panel-title">Activity log</div><div id="status" class="subtitle">Loading records...</div></div>
+<div class="filter-row"><input id="from" type="date" title="From"><input id="to" type="date" title="To"><select id="type"><option value="">All activity</option><option value="CHECK_IN">Check-in</option><option value="CHECK_OUT">Check-out</option></select><input id="search" class="search" placeholder="Search employee"></div></div>
+<div class="table-wrap"><table><thead><tr><th>Employee</th><th>Type</th><th>Date</th><th>Time</th><th>Record ID</th></tr></thead><tbody id="body"></tbody></table></div></div>
+</main></div>
+<script>
+let records=[];
+const body=document.getElementById('body');
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function d(v){const x=new Date(v);return isNaN(x)?String(v):x.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'})}
+function t(v){const x=new Date(v);return isNaN(x)?String(v):x.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function filtered(){
+ const f=document.getElementById('from').value,to=document.getElementById('to').value,type=document.getElementById('type').value,q=document.getElementById('search').value.toLowerCase();
+ return records.filter(r=>{const day=String(r.timestamp||'').slice(0,10);return (!f||day>=f)&&(!to||day<=to)&&(!type||r.type===type)&&(!q||(r.employeeName||'').toLowerCase().includes(q));});
+}
+function render(){
+ const data=filtered();document.getElementById('visible').textContent=data.length;body.innerHTML='';
+ if(!data.length){body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-icon">◷</div><b>No matching records</b><div>Scan an employee QR or adjust the filters.</div></div></td></tr>';return}
+ body.innerHTML=data.map(r=>`<tr><td><b>${esc(r.employeeName)}</b><div class="employee-email">Employee #${r.employeeId}</div></td><td><span class="badge ${r.type==='CHECK_IN'?'badge-green':'badge-amber'}">${r.type==='CHECK_IN'?'CHECK-IN':'CHECK-OUT'}</span></td><td>${d(r.timestamp)}</td><td>${t(r.timestamp)}</td><td>#${r.id}</td></tr>`).join('');
+}
+async function load(){try{const r=await fetch('/api/attendance/report');if(!r.ok)throw new Error('HTTP '+r.status);records=await r.json();document.getElementById('total').textContent=records.length;document.getElementById('ins').textContent=records.filter(x=>x.type==='CHECK_IN').length;document.getElementById('outs').textContent=records.filter(x=>x.type==='CHECK_OUT').length;document.getElementById('status').textContent='Live data from the attendance database';render()}catch(e){document.getElementById('status').textContent='Could not load records: '+e.message}}
+['from','to','type','search'].forEach(id=>document.getElementById(id).addEventListener(id==='search'?'input':'change',render));
+document.getElementById('export').addEventListener('click',()=>{const rows=[['Record ID','Employee ID','Employee Name','Type','Timestamp'],...filtered().map(r=>[r.id,r.employeeId,r.employeeName,r.type,r.timestamp])];const csv=rows.map(row=>row.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='attendance-report.csv';a.click();URL.revokeObjectURL(a.href)});
+load();setInterval(load,15000);
+</script></body></html>

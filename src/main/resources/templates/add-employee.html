@@ -1,146 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Employee</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6f8;
-            color: #222;
-        }
-
-        .card {
-            width: 100%;
-            max-width: 420px;
-            background: #fff;
-            padding: 32px;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-        }
-
-        h1 {
-            margin: 0 0 24px;
-            font-size: 24px;
-            text-align: center;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 14px;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px 12px;
-            margin-bottom: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 4px;
-            background: #2563eb;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #1d4ed8;
-        }
-
-        button:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-        }
-
-        #message {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 4px;
-            text-align: center;
-            line-height: 1.5;
-        }
-    </style>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Add Employee • QR Attendance</title><link rel="stylesheet" href="/style.css"></head>
 <body>
-    <div class="card">
-        <h1>Add Employee</h1>
-        <form id="employeeForm">
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" required>
-
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required>
-
-            <button type="submit" id="submitBtn">Submit</button>
-        </form>
-        <div id="message"></div>
-    </div>
-
-    <script>
-        const form = document.getElementById("employeeForm");
-        const message = document.getElementById("message");
-        const submitBtn = document.getElementById("submitBtn");
-
-        form.addEventListener("submit", async function (event) {
-            event.preventDefault();
-
-            const name = document.getElementById("name").value.trim();
-            const email = document.getElementById("email").value.trim();
-
-            message.textContent = "";
-            message.style.backgroundColor = "";
-            message.style.color = "";
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch("http://localhost:8080/api/employees", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ name: name, email: email })
-                });
-
-                if (!response.ok) {
-                    throw new Error("Request failed with status " + response.status);
-                }
-
-                const employee = await response.json();
-
-                message.style.backgroundColor = "#ecfdf5";
-                message.style.color = "#065f46";
-                message.innerHTML =
-                    "Employee added successfully.<br>" +
-                    "ID: " + employee.id + "<br>" +
-                    "QR Code: " + employee.qrCode;
-
-                form.reset();
-            } catch (error) {
-                message.style.backgroundColor = "#fef2f2";
-                message.style.color = "#991b1b";
-                message.textContent = "Could not add employee. " + error.message;
-            } finally {
-                submitBtn.disabled = false;
-            }
-        });
-    </script>
-</body>
-</html>
+<div class="app">
+<aside class="sidebar"><div class="brand"><div class="brand-mark">QR</div><span>Attendance</span></div><div class="nav-title">Workspace</div><nav class="nav">
+<a href="/"><span class="nav-icon">⌂</span><span>Dashboard</span></a><a href="/employees"><span class="nav-icon">👥</span><span>Employees</span></a><a class="active" href="/add-employee"><span class="nav-icon">＋</span><span>Add Employee</span></a><a href="/scan"><span class="nav-icon">▣</span><span>Scan QR</span></a><a href="/attendance-report"><span class="nav-icon">▤</span><span>Attendance</span></a>
+</nav></aside>
+<main class="main">
+<div class="topbar"><div><div class="eyebrow">Employees</div><h1>Add employee</h1><p class="subtitle">Register a person and automatically generate their unique QR code.</p></div><a class="btn btn-secondary" href="/employees">← Employees</a></div>
+<div class="card form-card">
+<form id="employeeForm">
+<div class="form-grid">
+<div class="field"><label for="name">FULL NAME</label><input type="text" id="name" required placeholder="e.g. Rahul Sharma"></div>
+<div class="field"><label for="email">EMAIL ADDRESS</label><input type="email" id="email" required placeholder="name@example.com"></div>
+</div>
+<div class="form-actions"><button type="reset" class="btn btn-secondary">Clear</button><button type="submit" class="btn btn-primary" id="submitBtn">Create employee</button></div>
+</form>
+<div id="message" class="notice"></div>
+</div>
+<div id="qrCard" class="card panel" style="max-width:720px;margin-top:18px;display:none">
+<div class="panel-head"><div><div class="panel-title">QR code generated</div><div class="subtitle">This code is linked to the employee record.</div></div><a id="employeesLink" class="btn btn-secondary" href="/employees">View employees</a></div>
+<div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap"><div class="qr-wrap"><img id="qrPreview" alt="Generated QR code" style="width:190px;height:190px"></div><div><div id="createdEmployee" style="font-weight:800;font-size:17px"></div><div id="createdEmail" class="subtitle" style="margin-bottom:14px"></div><div class="subtitle">Keep this QR with the employee. It is used to identify them during attendance scans.</div><div class="card-actions"><a id="openQr" class="btn btn-secondary" target="_blank">Open QR</a><button id="printQr" type="button" class="btn btn-primary">Print QR</button></div></div></div>
+</div>
+</main></div>
+<script>
+const form=document.getElementById('employeeForm'), message=document.getElementById('message'), btn=document.getElementById('submitBtn');
+form.addEventListener('submit',async e=>{
+ e.preventDefault(); btn.disabled=true; btn.textContent='Creating...'; message.className='notice'; message.textContent='';
+ try{
+  const name=document.getElementById('name').value.trim(),email=document.getElementById('email').value.trim();
+  const r=await fetch('/api/employees',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
+  if(!r.ok) throw new Error('Request failed with status '+r.status);
+  const employee=await r.json();
+  message.className='notice success'; message.textContent='Employee created successfully.';
+  document.getElementById('qrCard').style.display='block';
+  const qrUrl='/api/employees/'+employee.id+'/qrcode';
+  document.getElementById('qrPreview').src=qrUrl;
+  document.getElementById('openQr').href=qrUrl;
+  document.getElementById('printQr').onclick=()=>{const w=window.open('', '_blank');w.document.write('<html><body style="font-family:Arial;text-align:center;padding:40px"><h2>QR Attendance</h2><p>'+employee.name+'</p><img src="'+qrUrl+'" style="width:300px;height:300px"><p>ID #'+employee.id+'</p><script>window.onload=()=>window.print()<\/script></body></html>');w.document.close();};
+  document.getElementById('createdEmployee').textContent=employee.name+' • ID #'+employee.id;
+  document.getElementById('createdEmail').textContent=employee.email;
+  form.reset();
+ }catch(err){message.className='notice error';message.textContent='Could not add employee. '+err.message}
+ finally{btn.disabled=false;btn.textContent='Create employee'}
+});
+</script>
+</body></html>
